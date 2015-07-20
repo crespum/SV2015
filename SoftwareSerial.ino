@@ -45,7 +45,8 @@ void parseDevices(char *message) {
   while(strcmp(idx_start, "OK+DISCE")) {
     idx_end = strstr(idx_start + 7, "OK+DISC");
     memcpy(device, idx_start + 7, idx_end - idx_start - 7);
-    Serial.print(device); // This is what shall be sent through the Internet
+    Serial.println("New device found: ");
+    Serial.println(device); // This is what shall be sent through the Internet
     idx_start = idx_end;
   }
 
