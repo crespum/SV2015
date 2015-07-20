@@ -1,98 +1,53 @@
+#include <string.h>
+#include <stdio.h>
 #include <SoftwareSerial.h>
 
-SoftwareSerial mySerial(10, 11); // RX, TX
-String data = "";
-char character;
-/*
-void setup()  
-{
-  // Open serial cOmmunications and wait for port to open:
-  Serial.begin(57600);
-  while (!Serial) {
-    ; // wait for serial port to connect. Needed for Leonardo only
-  }
-  Serial.println("AGBAR Node\n");
-  Serial.println("Receiving data from Agbar BLE Module \n");
-
-  mySerial.begin(9600);
-}
-/*
-void loop() // run over and over
-{
-  while(mySerial.available()==0)
-  {}
-
-  char character;
-  while(mySerial.available()>0)
-   {
-     character = mySerial.read();
-     mySerial.write(character);
-   }
-
-   data = data + character;
-
-   if (character == 13) {  
-     mySerial.print("Received: ");
-     mySerial.println(data);
-     data = "";
-   } 
-}*/
-
-String inputString = "";         // a string to hold incoming data
-boolean stringComplete = false;  // whether the string is completeString inputString = "";         // a string to hold incoming data
-
-float time;
-float oldTime;
+SoftwareSerial softSerial(10, 11); // RX, TX
+char message[700];
+char new_char;
+int pos = 0; // index of the last received message character
 
 void setup() {
-// initialize serial:
-Serial.begin(9600);
-pinMode(4, OUTPUT);
-digitalWrite(4, LOW);
-}
+  Serial.begin(9600);
+  softSerial.begin(9600);
+  
+  Serial.print("Welcome to the AGBAR Node\n");
+  Serial.print("The Node is scanning all the BLE devices\n");
 
-void HM10Reset(){
-  Serial.print("AT+RESET");
-  delay(220);
-  digitalWrite(4, HIGH);
-  delay(100);
-  digitalWrite(4, LOW);
-  delay(150);
+  delay(500);
+  softSerial.print("AT+DISI?"); 
+
+  delay(500);
 }
 
 void loop() {
-  // print the string when a newline arrives:
-  Serial.write("AT+CON883314DD8016");
-  delay(150);
-  Serial.print("From first node!  Seconds ago last here: ");
-  time = millis();
-  Serial.println((time-oldTime)/1000);
-  oldTime = millis();
-  delay(250);
-  HM10Reset();
-  Serial.write("AT+CON883314DD8015");
-  delay(150);  
-  Serial.println("From second node!");
-  delay(150);
-  HM10Reset();
-}
+  if (softSerial.available()) {
+    new_char = softSerial.read();
+    Serial.write(new_char);
+    message[pos++] = new_char; // concat new received character with the previous ones
 
-void serialEvent() {
-  while (Serial.available()) {
-  // get the new byte:
-  char inChar = (char)Serial.read(); 
-  // add it to the inputString:
-  delay(50);
-  inputString += inChar;
-  stringComplete = true;
-}
-
-}
-    
-void loop() // run over and over
-{
-  if (mySerial.available())
-    Serial.write(mySerial.read());
+    if (strstr(message, "OK+DISCE")) { // entire message received
+      parseDevices(message);
+      pos = 0; // initialize message
+      memset(message, 0, sizeof(message));
+    }
+  }
   if (Serial.available())
-    mySerial.write(Serial.read());  
+    softSerial.write(Serial.read());
+}
+
+void parseDevices(char *message) {
+  char device[80];
+  char *idx_start;
+  char *idx_end;
+
+  idx_start = strstr(message, "OK+DISC");
+  while(strcmp(idx_start, "OK+DISCE")) {
+    idx_end = strstr(idx_start + 7, "OK+DISC");
+    memcpy(device, idx_start + 7, idx_end - idx_start - 7);
+    Serial.print(device); // This is what shall be sent through the Internet
+    idx_start = idx_end;
+  }
+
+  return;
 }

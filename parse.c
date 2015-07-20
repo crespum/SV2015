@@ -7,14 +7,14 @@ void main() {
 	int i;
 	printf("Message: %s\n\n", message);
 
-	char *device;
+	char device[80];
 	char *idx_start;
 	char *idx_end;
 	idx_start = strstr(message, "OK+DISC");
 
 	while(strcmp(idx_start, "OK+DISCE")) {
 		idx_end = strstr(idx_start + 7, "OK+DISC");
-		device = strndup(idx_start + 7, idx_end - idx_start - 7);
+		memcpy(device, idx_start + 7, idx_end - idx_start - 7);
 		puts(device); // This is what shall be sent through internet
 		idx_start = idx_end;
 	}
