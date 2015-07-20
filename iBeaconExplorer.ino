@@ -53,7 +53,7 @@ void parseDevices(char *message) {
     Serial.print("New device found: ");
     Serial.println(device); // This is what shall be sent through the Internet
     String sDevice(device);
-    appendRow(sDevice)
+    appendRow(sDevice);
     idx_start = idx_end;
   }
 
@@ -100,7 +100,7 @@ void appendRow(String message) {
     } else {
       // return code of anything other than zero means failure  
       // read and display any error messages
-      Serial.println("Unable to upload the device info to Internet")
+      Serial.println("Unable to upload the device info to Internet");
       while (appendRowChoreo.available()) {
         char c = appendRowChoreo.read();
         Serial.print(c);
