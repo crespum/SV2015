@@ -52,45 +52,47 @@ void parseDevices(char *message) {
     memcpy(device, idx_start + 7, idx_end - idx_start - 7);//what if different length
     Serial.print("New device found: ");
     Serial.println(device); // This is what shall be sent through the Internet
+    String sDevice(device);
+    appendRow(sDevice)
     idx_start = idx_end;
   }
 
   return;
 }
 
-void appendRow(char *message) {
+void appendRow(String message) {
     // we need a Process object to send a Choreo request to Temboo
-    TembooChoreo AppendRowChoreo;
+    TembooChoreo appendRowChoreo;
 
     // invoke the Temboo client
     // NOTE that the client must be reinvoked and repopulated with
     // appropriate arguments each time its run() method is called.
-    AppendRowChoreo.begin();
+    appendRowChoreo.begin();
     
     // set Temboo account credentials
-    AppendRowChoreo.setAccountName(TEMBOO_ACCOUNT);
-    AppendRowChoreo.setAppKeyName(TEMBOO_APP_KEY_NAME);
-    AppendRowChoreo.setAppKey(TEMBOO_APP_KEY);
+    appendRowChoreo.setAccountName(TEMBOO_ACCOUNT);
+    appendRowChoreo.setAppKeyName(TEMBOO_APP_KEY_NAME);
+    appendRowChoreo.setAppKey(TEMBOO_APP_KEY);
     
     // identify the Temboo Library choreo to run (Google > Spreadsheets > AppendRow)
-    AppendRowChoreo.setChoreo("/Library/Google/Spreadsheets/AppendRow");
+    appendRowChoreo.setChoreo("/Library/Google/Spreadsheets/AppendRow");
     
     // set the required Choreo inputs
     // see https://www.temboo.com/library/Library/Google/Spreadsheets/AppendRow/ 
     // for complete details about the inputs for this Choreo
     
     // set Google account
-    AppendRowChoreo.addInput("ClientID", GOOGLE_CLIENT_ID);
-    AppendRowChoreo.addInput("ClientSecret", GOOGLE_CLIENT_SECRET);
-    AppendRowChoreo.addInput("RefreshToken", GOOGLE_REFRESH_TOKEN);
-    AppendRowChoreo.addInput("SpreadsheetTitle", SPREADSHEET_TITLE);
+    appendRowChoreo.addInput("ClientID", GOOGLE_CLIENT_ID);
+    appendRowChoreo.addInput("ClientSecret", GOOGLE_CLIENT_SECRET);
+    appendRowChoreo.addInput("RefreshToken", GOOGLE_REFRESH_TOKEN);
+    appendRowChoreo.addInput("SpreadsheetTitle", SPREADSHEET_TITLE);
 
     // add the RowData input item
-    AppendRowChoreo.addInput("RowData", message);
+    appendRowChoreo.addInput("RowData", message);
 
     // run the Choreo and wait for the results
     // The return code (returnCode) will indicate success or failure 
-    unsigned int returnCode = AppendRowChoreo.run();
+    unsigned int returnCode = appendRowChoreo.run();
 
     // return code of zero (0) means success
     if (returnCode == 0) {
@@ -99,11 +101,11 @@ void appendRow(char *message) {
       // return code of anything other than zero means failure  
       // read and display any error messages
       Serial.println("Unable to upload the device info to Internet")
-      while (AppendRowChoreo.available()) {
-        char c = AppendRowChoreo.read();
+      while (appendRowChoreo.available()) {
+        char c = appendRowChoreo.read();
         Serial.print(c);
       }
     }
 
-    AppendRowChoreo.close();  
+    appendRowChoreo.close();  
 }
